@@ -28,9 +28,11 @@ Definition A_to_B_to_A : A -> B -> A := fun a => fun g => a.
 (* (*Admitted.*) *)
 
 (*
+A -> B(Aを受取りBを返す関数)は値と同じように扱えます
+つまり、次のmodus_ponensではfun f => fun a => ...とすると引数として受け取れます
 f : A -> B
 a : A
-という型のとき、f aとすることで関数呼び出しを行い、b型の値を得ることができます
+という型のとき、f aとすることで関数呼び出しを行い、B型の値を得ることができます
  *)
 
 (* Q1-3 *)
@@ -45,7 +47,7 @@ Definition imply_trans : (A -> B) -> (B -> C) -> (A -> C) := fun gp => fun io  =
 (* 
 *** ステップ2 ***
 
-Inductive and (A B  : Prop)  : Prop :=  conj  : A -> B -> A /\ B.
+Inductive and (A B  : Prop) : Prop := conj : A -> B -> A /\ B.
 andの定義は上記の通りです。Inductiveは帰納型で、いわゆる代数的データ構造です
 Printコマンド、あるいはCoqIDEではandにカーソルを合わせてCtrl+Shift+Pで定義を確認できます
 Coqでは記法を自由に拡張することができ、A /\ Bと書くことでand A Bと同等のことができます
@@ -62,6 +64,16 @@ Definition and_left : A /\ B -> A :=
     | conj a b => a
     end.
 
+(* 
+パターンマッチングの構文は次のようなものです
+bがbool型の値だとすると、
+match b with
+  | true => 1
+  | false => 0
+end
+となります。trueの行が1つ目の枝、falseの行が2つ目の枝になります
+ *)
+
 (* Q2-1 *)
 Definition and_right : A /\ B -> B:=
 fun b_and_a =>
@@ -72,7 +84,7 @@ end.
  *)
 About conj.
 (* 
-Aboutコマンド、あるいはCoqIDEではconjにカーソルを合わせてCtrl+Shift+Aでどのような型を持っているか確認できます
+Aboutコマンド、あるいはCoqIDEではconjにカーソルを合わせてCtrl+Shift+Aを押すと、どのような型を持っているか確認できます
 conjは、2つの値A, Bを受け取り、A /\ Bを返す関数であることがわかります
  *)
 
@@ -98,10 +110,10 @@ Definition and_comm' : A /\ B -> B /\ A :=
  *)
 Print or.
 (* 
-Inductive or (A B  : Prop)  : Prop :=
-  | or_introl  : A -> A \/ B
-  | or_intror  : B -> A \/ B.
-orは2つの枝をもつ帰納型です。パターンマッチするさいには2つの枝(or_introl, or_intror)に別れます。
+Inductive or (A B : Prop) : Prop :=
+  | or_introl : A -> A \/ B
+  | or_intror : B -> A \/ B.
+orは2つの枝をもつ帰納型です。パターンマッチする際には2つの枝(or_introl, or_intror)に別れます
  *)
 
 Definition A_or_A_to_A : A \/ A -> A :=
@@ -154,7 +166,7 @@ TheoremはDefinitionと違い式を直接書けませんが、定理を証明す
 Theorem A_to_A' : A -> A.
 Proof. (* Proofコマンドは特に効果はありませんが、慣例的に書くことになっています。 *)
 move => a. (* move =>タクティックは、ゴールエリアの仮定をコンテキストエリアに移動します *)
-exact a. (* exactタクティックは、ゴールエリアの型をもつ式を書くことで、証明を終了できます。 *)
+exact a. (* exactタクティックは、ゴールエリアの型をもつ式を書くことで、証明を終了できます *)
 Qed.
 
 (* Q3-1 *)
@@ -204,6 +216,10 @@ caseタクティックには=>を付けることで、caseとmove =>を合わせ
 他のタクティックにも=>を付けると同じように動作するものがあります。いろいろ試してみましょう
  *)
 exact ha.
+Restart.
+move => H.
+case H => a b. (* case HとするとHを分解することができます *)
+exact a.
 Qed.
 
 (* Q4-1 *)
@@ -380,7 +396,13 @@ reflexivity.
 Qed.
 (* Admitted. *)
 
-(* また、仮定にexistsが来た場合には、caseタクティックで分解し値を取り出せます *)
+(* 
+また、仮定にexistsが来た場合には、caseタクティックで分解し値を取り出せます
+Print exでexistsの中身を見ると、existsが帰納型として定義されていることがわかります
+帰納型はパターンマッチで分解でき、existsの中身のforall x : A, P xが取り出せるのです
+ *)
+Print ex.
+
 (* Q5-5 *)
 Theorem exists_sample1 n : (exists m, n = m + 2 /\ m = 2) -> n = 4.
 Proof.
@@ -559,7 +581,8 @@ Proof.
 Admitted.
 
 (* 
-命題A, Bに対して、A <-> Bという命題はA -> BかつB -> Aを表します
+命題A, Bに対して、A <-> Bという命題はAとBが必要十分条件であることを表します
+A <-> Bは分解するとA -> BとB -> Aになります
  *)
 Theorem eq_iff_eqb n m : (n =? m) = true <-> n = m.
 Proof.

@@ -19,12 +19,13 @@ fun <名前> => <式> でラムダ式を定義できます
 Definition A_to_A : A -> A := fun a => a.
 
 (* Q1-1 問題はこの形式で書かれているので、末尾のカンマとAdmittedを消して穴埋め部分を埋めてください *)
-Definition func_sample : A -> A.
-Admitted.
+Definition func_sample : A -> A := fun gpio => gpio.
+
+(*Admitted.*)
 
 (* Q1-2 *)
-Definition A_to_B_to_A : A -> B -> A.
-Admitted.
+Definition A_to_B_to_A : A -> B -> A := fun a => fun g => a.
+(* (*Admitted.*) *)
 
 (*
 f : A -> B
@@ -33,13 +34,13 @@ a : A
  *)
 
 (* Q1-3 *)
-Definition modus_ponens : (A -> B) -> A -> B.
-Admitted.
-
+Definition modus_ponens : (A -> B) -> A -> B := fun gp => fun a => gp a.
+(* Admitted.
+ *)
 (* Q1-4 3引数を受け取ることに注意しましょう *)
-Definition imply_trans : (A -> B) -> (B -> C) -> (A -> C).
-Admitted.
-
+Definition imply_trans : (A -> B) -> (B -> C) -> (A -> C) := fun gp => fun io  => fun bl => io (gp bl) .
+(* Admitted.
+ *)
 
 (* 
 *** ステップ2 ***
@@ -62,23 +63,39 @@ Definition and_left : A /\ B -> A :=
     end.
 
 (* Q2-1 *)
-Definition and_right : A /\ B -> B.
-Admitted.
-
+Definition and_right : A /\ B -> B:=
+fun b_and_a =>
+match b_and_a with
+| conj b a => a
+end.
+(* Admitted.
+ *)
 About conj.
 (* 
 Aboutコマンド、あるいはCoqIDEではconjにカーソルを合わせてCtrl+Shift+Aでどのような型を持っているか確認できます
 conjは、2つの値A, Bを受け取り、A /\ Bを返す関数であることがわかります
  *)
 
+
+(*
+ *)
+
 (* Q2-2 *)
-Definition A_to_B_to_A_and_B : A -> B -> A /\ B.
-Admitted.
-
+Definition A_to_B_to_A_and_B : A -> B -> A /\ B:=
+ fun a => fun b =>
+(* fun a_to_b_to_a_and_b => *)
+conj a b.
+(* Admitted.
+ *)
 (* Q2-3 *)
-Definition and_comm' : A /\ B -> B /\ A.
-Admitted.
-
+Definition and_comm' : A /\ B -> B /\ A :=
+  fun a_and_b =>
+    match a_and_b with
+    | conj a b => 
+    conj b a
+    end.
+(* Admitted.
+ *)
 Print or.
 (* 
 Inductive or (A B  : Prop)  : Prop :=
@@ -97,17 +114,32 @@ Definition A_or_A_to_A : A \/ A -> A :=
 Definition A_to_A_or_B : A -> A \/ B := fun a => or_introl a.
 
 (* Q2-4 *)
-Definition B_to_A_or_B : B -> A \/ B.
-Admitted.
+Definition B_to_A_or_B : B -> A \/ B :=
+fun b => or_intror b.
 
+(* Admitted.
+ *)
 (* Q2-5 *)
-Definition or_comm' : A \/ B -> B \/ A.
-Admitted.
+Definition or_comm' : A \/ B -> B \/ A:=
+  fun a_or_b =>
+    match a_or_b with
+    | or_introl ha => or_intror ha
+    | or_intror hb => or_introl hb
+    end.
 
+(* Admitted.
+ *)
 (* Q2-6 *)
-Definition and_to_or : A /\ B -> A \/ B.
-Admitted.
+Definition and_to_or : A /\ B -> A \/ B:=
+fun b_and_a =>
+match b_and_a with
+| conj b a => or_intror a
+end
+.
 
+(* 
+(* Admitted. *)
+ *)
 
 (* 
 *** ステップ3 ***
@@ -128,7 +160,12 @@ Qed.
 (* Q3-1 *)
 Theorem A_to_B_to_A' : A -> B -> A.
 Proof.
-Admitted.
+move => a => b.
+(*move => b => c. *)
+exact a => b.
+Qed.
+(* Admitted. *)
+
 
 Theorem modus_ponens' : (A -> B) -> A -> B.
 Proof.
@@ -143,8 +180,14 @@ Qed.
 
 (* Q3-2 *)
 Theorem imply_trans' : (A -> B) -> (B -> C) -> (A -> C).
-Admitted.
-
+(* Admitted. *)
+Proof.
+move => a_to_b b_to_c a_to_c.
+apply b_to_c.
+apply a_to_b.
+About a_to_b.
+exact a_to_c.
+Qed.
 
 (* 
 *** ステップ4 ***
@@ -166,8 +209,12 @@ Qed.
 (* Q4-1 *)
 Theorem and_right' : A /\ B -> B.
 Proof.
-Admitted.
+case.
+move => ha hb.
+exact hb.
+Qed.
 
+(* Admitted.*)
 Theorem A_to_B_to_A_and_B' : A -> B -> A /\ B.
 Proof.
 move => a b.
@@ -185,7 +232,12 @@ Qed.
 (* Q4-2 *)
 Theorem and_comm'' : A /\ B -> B /\ A.
 Proof.
-Admitted.
+(* Admitted. *)
+case.
+split.
+exact b.
+exact a.
+Qed.
 
 Theorem A_to_A_or_B' : A -> A \/ B.
 Proof.
@@ -204,15 +256,33 @@ Qed.
 (* Q4-3 *)
 Theorem or_comm'' : A \/ B -> B \/ A.
 Proof.
-Admitted.
+Restart.
+Restart.
+(* left. *)
+case.
+right.
+exact a.
+move => b.
+left.
+exact b.
+Qed.
+
+(* Admitted. *)
 
 (* Q4-4 *)
 Theorem Q4_4 : (A /\ B) \/ (B /\ C) -> B.
 Proof.
-Admitted.
+(* Admitted. *)
+case.
+case.
+move => a b.
+apply b.
+case.
+move => b c.
+apply b.
+Qed.
 
 End Section1.
-
 
 (* 
 *** ステップ5 ***
@@ -251,7 +321,10 @@ Qed.
 (* Q5-1 *)
 Theorem rewrite_sample2 n : n = 3 -> n + 1 = 4.
 Proof.
-Admitted.
+move => さん.
+by rewrite さん.
+Qed.
+(* Admitted. *)
 
 (* 
 Coqでは関数の中身を見ることができます
@@ -265,7 +338,17 @@ Print Nat.pred.
 (* Q5-2 *)
 Theorem rewrite_sample3 n m: n = S m -> pred n = m.
 Proof.
-Admitted.
+Print Nat.pred.
+move => A.
+by rewrite A.
+Restart.
+move => A.
+rewrite A.
+rewrite /=.
+reflexivity.
+Qed.
+
+(* Admitted. *)
 
 (* 
 論理学では、すべての<変数>に対して<命題>が成り立つ(全称量化)、ある<変数>が存在し<命題>を満たす(存在量化)、という命題を書けます
@@ -282,23 +365,72 @@ Qed.
 (* Q5-3 *)
 Theorem mul_functional : forall n m, exists x, x = n * m.
 Proof.
-Admitted.
+move => n m.
+exists (n * m).
+reflexivity.
+Qed.
+(* Admitted. *)
 
 (* Q5-4 *)
 Theorem sqrt_25 : exists x, x * x = 25.
 Proof.
-Admitted.
+exists (5).
+rewrite /=.
+reflexivity.
+Qed.
+(* Admitted. *)
 
 (* また、仮定にexistsが来た場合には、caseタクティックで分解し値を取り出せます *)
 (* Q5-5 *)
 Theorem exists_sample1 n : (exists m, n = m + 2 /\ m = 2) -> n = 4.
 Proof.
-Admitted.
+case.
+case.
+case.
+case.
+case.
+move.
+rewrite /=.
+rewrite /=.
+move => m l.
+Restart.
+case.
+rewrite /=.
+move => m l.
+case l => L.
+rewrite /=.
+move => f.
+rewrite L.
+rewrite /=.
+rewrite f.
+reflexivity.
+Qed.
+
+(* obvious. *)
+(* 直感的に明らか。 *)
+
+
+
+
+
+(* Admitted. *)
 
 (* Q5-6 *)
 Theorem exists_sample2 n : (exists m, n = S (S m)) -> (exists l, n = S l).
 Proof.
-Admitted.
+case => m H.
+rewrite H.
+exists (S m).
+reflexivity.
+Qed.
+
+
+(* case => *)
+(* rewrite /=. *)
+
+
+
+(* Admitted. *)
 
 (* 
 *** ステップ6 ***
@@ -308,8 +440,8 @@ Admitted.
 Theorem mul_one_eq_n n : n * 1 = n.
 Proof.
 move : n. (* move :タクティックを使うことで、コンテキストからゴールへ移動できます *)
-induction n. (* inductionタクティックを使うことで、帰納法を利用できます *)
 (* 複雑な問題では、inductionを使う前にmove :でコンテキストの値や証明をゴールエリアに持ってくることが必要なことがあります *)
+induction n. (* inductionタクティックを使うことで、帰納法を利用できます *)
 - by [].
 - rewrite /=.
   by rewrite IHn.
@@ -318,17 +450,59 @@ Qed.
 (* Q6-1 *)
 Theorem n_plus_zero_eq_n n : n + 0 = n.
 Proof.
-Admitted.
+move : n.
+induction n.
+rewrite /=.
+reflexivity.
+rewrite /=.
+rewrite IHn.
+reflexivity.
+Qed.
+(* Admitted. *)
 
 (* Q6-2 *)
 Theorem succ_plus n m : n + (S m) = S (n + m).
 Proof.
-Admitted.
+move: m n.
+induction m.
+induction n.
+rewrite /=.
+reflexivity.
+rewrite /=.
+rewrite IHn.
+reflexivity.
+rewrite /=.
+induction n.
+rewrite /=.
+reflexivity.
+rewrite /=.
+rewrite IHn.
+reflexivity.
+Qed.
+
+
+(* Admitted. *)
 
 (* Q6-3 rewrite n_plus_zero_eq_nとすると既に証明した定理を使えます *)
 Theorem plus_comm n m : n + m = m + n.
 Proof.
-Admitted.
+move: m n.
+induction m.
+by induction n.
+rewrite /=.
+Restart.
+(* move : m n. *)
+induction n.
+rewrite n_plus_zero_eq_n.
+rewrite /=.
+reflexivity.
+rewrite /=.
+rewrite IHn.
+rewrite succ_plus.
+reflexivity. 
+Qed.
+
+(* Admitted. *)
 
 
 Require Import Coq.Arith.PeanoNat.
